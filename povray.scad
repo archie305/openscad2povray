@@ -1,13 +1,25 @@
 //echo("*");
 povray_gen=1;
-povray_defcolor=0;
+//povray_defcolor=0;
 indentstr="  ";
+mapped_functions = [["translate"], ["rotate"], ["scale"], ["multmatrix"], ["color"], ["group"], ["union"], ["difference"], ["intersection"]];
+
 function indentdelta(n) = (n[0] != "_" ? "" : n[1]!= "_" ? indentstr : ""); // only modules starting with a single '_' will indent
 function indent(i) = i>0 ? str(indentdelta(parent_module(i-1)),indent(i-1)) : ""; // construct indent string based on stack
 function strvd(v,i) = str(",",v[i],(len(v)-1==i ? ">" : strvd(v,i+1))); // build povray vector
 function strv(v) = len(v)==undef ? v : str("<",v[0],strvd(v,1));
 function color(c) = len(c) == undef ? c : str("color rgb",(len(c)==4 ? "t " : " "),strv(c));
 function pigment(p) = str("pigment {",color(p),"}");
+module printstack() {for (i=[0:$parent_modules-1]) echo(parent_module(i));}
+
+function mapped_function_used(i) = 
+(
+  i < $parent_modules ? (parent_module(i)[0] != "_" && search([parent_module(i)],mapped_functions) != undef
+  ) || 
+  mapped_function_used(i+1) 
+  :
+  false
+);
 
 // modules to print out the pov-ray code
 
@@ -15,6 +27,11 @@ povray_code = "POVRAY:";
 
 module pov(s,c) // s = string to print out, c = optional end of line comment
 {
+    /*if (mapped_function_used(0)) 
+    {
+       printstack();
+       echo("$$$$$$$$$$$$$$$$$$$$$$$$$$");
+    }*/   
     if ($children==0) 
     {
         if (povray_gen) echo(str(povray_code, s, (s=="" ? "" : " "), (c==undef ? "" : str("// ",c))));
@@ -148,7 +165,6 @@ module _cube(size = [1, 1, 1], center = false)
             "box {",
             center ? strv(-psize/2) : strv([0,0,0]),",",
             strv(psize/(center ? 2 : 1)),
-            povray_defcolor ? pigment(povray_color_cube) : "",
             "}"
         ));
     }
@@ -162,7 +178,6 @@ module _sphere(r=1)
         indent($parent_modules),
         "sphere {<0,0,0>, ",
         r,
-        povray_defcolor ? pigment(povray_color_sphere): "",
         "}"
     ));
 }
@@ -196,8 +211,8 @@ module _cylinder(r1,r2,r = 1,h = 1, center = false)
                 "cone {", 
                 strv(center ? [0,0,-h/2] : [0,0,0]), ",",
                 (r1==undef?r:r1), strv(center ? [0,0,h/2] : [0,0,h]), ",", 
-                (r2==undef?r:r2), 
-                povray_defcolor ? pigment(povray_color_cylinder) : "","}"
+                (r2==undef?r:r2),
+                "}"
             ));
         }
     }  
@@ -308,11 +323,11 @@ module _group()
 /////////////////////////////////////////////////////////////////
 
 
-module test()
+module test1() // transparency/color test
 {
     pov_init();
     openscad_background();
-    openscad_camera(type="perspective", distance=300, width= 16, heigth= 9);
+    openscad_camera(type="perspective", distance=500, width= 16, heigth= 9);
     openscad_light_source(); 
     _union()
     {
@@ -333,5 +348,32 @@ module test()
     }
 }
 
-test();
+module test2() 
+{
+    pov_init();
+    openscad_background();
+    openscad_camera(type="perspective", distance=500, width= 16, heigth= 9);
+    openscad_light_source();
+
+    _translate([-5,-10,0]) 
+    _union()
+    {
+        _color([1,0.5,0.5]) _difference()
+        {
+            _cube(size=[10,20,30]);
+            _cylinder(r=5,h=20,center=true);
+            _translate([5,10,15]) _rotate([0,90,0]) _cylinder(r=3,h=11,$fn=6,center=true);
+        }
+        _translate ([10,10,15]) _color ([0.5,0.5,1,.8]) _sphere(r=5);
+        _translate([0.05,10,30]) _rotate([0,90,0]) _color([0.2,1,.2,.8]) 
+        _difference()
+        {
+            _cylinder(r=10,h=9.9);
+            _translate([0,0,-0.5]) _cylinder(r=6,h=11);
+        }
+        _translate([0,10,30]) _rotate([0,-90,0]) _color([1,0,1,0.2]) _cylinder(r1=8,r2=2,h=5);
+    }
+}
+
+test2();
 
