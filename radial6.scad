@@ -1,5 +1,8 @@
+// http://www.thingiverse.com/thing:54404
+// Openscad, 5 Cylinder Radial Engine.
+// by 3rdJack
 
-use <utils/build_plate.scad>
+/*use <utils/build_plate.scad>
 
 
 //set your build plate
@@ -13,7 +16,7 @@ build_plate_manual_y = 100; //[100:400]
 
 build_plate(build_plate_selector,build_plate_manual_x,build_plate_manual_y);
 
-
+*/
 
 
 
@@ -22,7 +25,7 @@ build_plate(build_plate_selector,build_plate_manual_x,build_plate_manual_y);
 
 
 //Control number of cylinders.
-cyl_number=3; //[1,2,3,4,5]
+cyl_number=5; //[1,2,3,4,5]
 
 
 //The scale of the model. 
