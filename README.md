@@ -36,7 +36,7 @@ OpenSCAD2POV-Ray is a OpenSCAD library that allows you to convert OpenSCAD scrip
     include <radial6.pov.csg>
 ```
   * preview model `radial6.pov.scad`
-  * copy all ECHO POVRAY lines (use right mouse click) 
+  * copy all lines starting with `ECHO: "POVRAY:` (use right mouse click) 
   * paste in new file as save -> `radial6.pov`
   * remove `ECHO: "POVRAY:` and trailing `"` from file `radial6.pov`
   * render `radial6.pov` in POV-Ray
