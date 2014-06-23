@@ -290,7 +290,7 @@ module cyl(){
 		union(){
 
 
-						for ( i = [0 : 16] ){			
+						for ( i = [1 : 16] ){			
 							translate([-17 - i,0,0]){
 								rotate (90, [1, 0, 0])
 									rotate (90, [0, 1, 0])
