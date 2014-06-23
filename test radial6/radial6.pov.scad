@@ -1,4 +1,4 @@
-use <povray.scad>
+use <../povray.scad>
 
 pov_init();
 openscad_background();
