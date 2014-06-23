@@ -21,23 +21,23 @@ OpenSCAD2POV-Ray is a OpenSCAD library that allows you to convert OpenSCAD scrip
  * Extra step of export of CSG file
 * Examples
  * radial6 from thingiverse 
-  * preview model radial6.scad 
-  * export as CSG -> radial6.csg
-  * subsitute $(\s*)([a-z]) by $1_$2 -> radial6.pov.csg
-  * create radial6.pov.scad
+  * preview model `radial6.scad` 
+  * export CSG as -> `radial6.csg`
+  * subsitute `$(\s*)([a-z])` by `$1_$2` and save as  -> `radial6.pov.csg`
+  * create radial6.pov.scad as follows:
 ```
-use <povray.scad>
+    use <povray.scad>
 
-pov_init();
-openscad_background();
-openscad_camera(type="perspective", distance=500, width= 16, heigth= 9);
-openscad_light_source();
+    pov_init();
+    openscad_background();
+    openscad_camera(type="perspective", distance=500, width= 16, heigth= 9);
+    openscad_light_source();
 
-include <radial6.pov.csg>
+    include <radial6.pov.csg>
 ```
-  * preview model radial6.pov.scad
+  * preview model `radial6.pov.scad`
   * copy all ECHO POVRAY lines (use right mouse click) 
-  * paste in new file as save -> radial6.pov
-  * remove `ECHO: "POVRAY:` and trailing `"`
-  * render in POV-Ray
+  * paste in new file as save -> `radial6.pov`
+  * remove `ECHO: "POVRAY:` and trailing `"` from file `radial6.pov`
+  * render `radial6.pov` in POV-Ray
 
