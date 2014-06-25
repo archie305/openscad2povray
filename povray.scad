@@ -1,7 +1,13 @@
-//echo("*");
 povray_gen=1;
-//povray_defcolor=0;
+
+openscad_vpr = $vpr;
+openscad_vpt = $vpt;
+openscad_vpd = 500; // openscad issue #839;
+openscad_vpw = 800;
+openscad_vph = 450;
+
 indentstr="  ";
+
 mapped_functions = [["translate"], ["rotate"], ["scale"], ["multmatrix"], ["color"], ["group"], ["union"], ["difference"], ["intersection"]];
 
 function indentdelta(n) = (n[0] != "_" ? "" : n[1]!= "_" ? indentstr : ""); // only modules starting with a single '_' will indent
@@ -25,6 +31,7 @@ function mapped_function_used(i) =
 
 povray_code = "POVRAY:";
 
+
 module pov(s,c) // s = string to print out, c = optional end of line comment
 {
     /*if (mapped_function_used(0)) 
@@ -44,9 +51,6 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
 module povc(c) pov("",c); // a single line of comment
 module pove(e) pov(str("##### ERROR #####: ", e)); 
 
-//povray_color_cube = [0.2,0.5,1];
-//povray_color_cylinder = [0.5,1,0.2];
-//povray_color_sphere = [1,0.2,0.5];
 function parameter(n,v) = (v == undef ? str("  /* ",n, " not defined*/") : str("  ", n, " ",v, "  "));
 
 module pov_init()
@@ -100,11 +104,11 @@ module openscad_background(c="openscad_cornfield")
    pov("");
 }
   
-module openscad_camera(type="perspective", distance=500,width=16,heigth=9)
+module openscad_camera(type="perspective", distance=openscad_vpd, width=openscad_vpw, heigth=openscad_vph)
 {
     povc("** OpenSCAD View Port defnition **");
-    pov_declare("openscad_vpt",strv($vpt));
-    pov_declare("openscad_vpr",strv($vpr));
+    pov_declare("openscad_vpt",strv(openscad_vpt));
+    pov_declare("openscad_vpr",strv(openscad_vpr));
     // view port distance is not available as special variable (https://github.com/openscad/openscad/issues/839)
     pov_declare("openscad_vpd",distance,"Please set manually"); 
     pov_declare("openscad_vpw",width);
@@ -126,12 +130,12 @@ module openscad_camera(type="perspective", distance=500,width=16,heigth=9)
 module openscad_light_source()
 {
     povc("** OpenSCAD light sources. The location depends on the view port definition **");
-    pov_light_source(str(strv([-1,1,1]),"*openscad_vpd + openscad_vpt"), color([1,1,1]), rotate="openscad_vpr");  
-    pov_light_source(str(strv([1,-1,-1]),"*openscad_vpd + openscad_vpt"), color([1,1,1]), rotate="openscad_vpr");   
-    %union() { // default vpd, as $vpd does not exist (yet)
-        rotate($vpr) translate([-1,1,1]*300+$vpt) sphere(r=10);
-        rotate($vpr) translate([1,-1,-1]*300+$vpt) sphere(r=10);
-    }
+    pov_light_source(str(strv([-1,1,1]),"*openscad_vpd), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");  
+    pov_light_source(str(strv([1,-1,-1]),"*openscad_vpd"), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");   
+    /*union() { // default vpd, as $vpd does not exist (yet)
+        rotate($vpr) translate([-1,1,1]*500+$vpt) sphere(r=10);
+        rotate($vpr) translate([1,-1,-1]*500+$vpt) sphere(r=10);
+    }*/
     pov("");
 }
 
@@ -238,49 +242,50 @@ module _polyhedron(points,faces) // ONLY: Convex polygons
     pov(indent($parent_modules),str("}"));
 }
 
-module __object(type,children,comment)
+module __object_open(type,children,comment)
 {
   pov(str(indent($parent_modules), children==1 ? "object" : "union" , " { ",comment));
+}
+
+module __object_close(type,code)
+{
+  pov(str(indent($parent_modules),indentstr,type," ",code));
+  pov(str(indent($parent_modules),"}")); 
 }
 
 module _translate(v,c="")
 {
   __object("translate",$children,c);
   translate(v) { children([0:$children-1]); }
-  pov(str(indent($parent_modules),indentstr,"translate ",strv(v)));
-  pov(str(indent($parent_modules),"}")); 
+  __object_close("translate",strv(v));
 }
 
 module _rotate(v,c="")
 {
   __object("rotate",$children,c);
   rotate(v) { children([0:$children-1]); }
-  pov(str(indent($parent_modules),indentstr,"rotate ",strv(v)));
-  pov(str(indent($parent_modules),"}")); 
+  __object_close("rotate",strv(v));
 }
 
 module _scale(v,c="")
 {
   __object("scale", $children,c);
   scale(v) { children([0:$children-1]); }
-  pov(str(indent($parent_modules),indentstr,"scale ",strv(v)));
-  pov(str(indent($parent_modules),"}")); 
+  __object_close("scale",strv(v));
 }
 
 module _multmatrix(m,c="")
 {
   __object("multimatrix", $children,c);
   multmatrix(m) { children([0:$children-1]); }
-  pov(str(indent($parent_modules),indentstr,"matrix ",strv([m[0][0],m[1][0],m[2][0],m[0][1],m[1][1],m[2][1],m[0][2],m[1][2],m[2][2],m[0][3],m[1][3],m[2][3]])));
-  pov(str(indent($parent_modules),"}")); 
+  __object_close("matrix",strv([m[0][0],m[1][0],m[2][0],m[0][1],m[1][1],m[2][1],m[0][2],m[1][2],m[2][2],m[0][3],m[1][3],m[2][3]]));
 }
 
 module _color(v,c="")
 {
   __object("color",$children,c);
   color(v) { children([0:$children-1]); }
-  pov(str(indent($parent_modules),indentstr,pigment([v[0],v[1],v[2],len(v)==4 ? 1-v[3] : 0])));
-  pov(str(indent($parent_modules),"}")); 
+  __object_close("",pigment([v[0],v[1],v[2],len(v)==4 ? 1-v[3] : 0]));
 }
 
 module _difference(c="")
