@@ -1,24 +1,24 @@
 # openscad2povray
 
-OpenSCAD2POV-Ray is a OpenSCAD library that allows you to convert OpenSCAD scripts to POV-Ray scripts. 
+OpenSCAD2POV-Ray is a OpenSCAD library that allows you to convert OpenSCAD scripts to POV-Ray scripts. See wiki for what is supported.
 
 ## Setups:
 
-
 ### Direct wrapper function substitutions
 * Advantage: 
- * custom colors
- * custom textures could be possible too
+ * one step less in the workflow (no intermediate csg file)
+ * [future: custom textures could be possible too]
 * Disadvantage
  * Limited support for alternative parameters specification
+ * need to use the wrapper modules directly
 * Examples:
  * module 'test1()' and module 'test2()' in povray.scad
 
 ### Include OpenSCAD CSG file 
 * Advantage
- * 'mirror' supported
+ * all aternative ways of specifying parameters supported
 * Disadvantage
- * Extra step of export of CSG file
+ * Extra step of exporting the CSG file
 * Examples
  * radial6 from thingiverse 
   * preview model `radial6.scad` 
