@@ -27,12 +27,7 @@ OpenSCAD2POV-Ray is a OpenSCAD library that allows you to convert OpenSCAD scrip
   * create file `radial6.pov.scad` as follows:
 ```
     use <povray.scad>
-
-    pov_init();
-    openscad_background();
-    openscad_camera(type="perspective", distance=500, width= 16, heigth= 9);
-    openscad_light_source();
-
+    openscad2povray_init();
     include <radial6.pov.csg>
 ```
   * preview model `radial6.pov.scad`
