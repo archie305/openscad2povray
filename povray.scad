@@ -130,7 +130,7 @@ module openscad_camera(type="perspective", distance=openscad_vpd, width=openscad
 module openscad_light_source()
 {
     povc("** OpenSCAD light sources. The location depends on the view port definition **");
-    pov_light_source(str(strv([-1,1,1]),"*openscad_vpd), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");  
+    pov_light_source(str(strv([-1,1,1]),"*openscad_vpd"), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");  
     pov_light_source(str(strv([1,-1,-1]),"*openscad_vpd"), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");   
     /*union() { // default vpd, as $vpd does not exist (yet)
         rotate($vpr) translate([-1,1,1]*500+$vpt) sphere(r=10);
@@ -158,6 +158,14 @@ module openscad_axes(crosshairs=0)
         }    
     }
 }   
+
+module openscad2povray_init()
+{
+    pov_init();
+    openscad_background();
+    openscad_camera();
+    openscad_light_source();
+}
 
 module _cube(size = [1, 1, 1], center = false)
 {
@@ -255,35 +263,35 @@ module __object_close(type,code)
 
 module _translate(v,c="")
 {
-  __object("translate",$children,c);
+  __object_open("translate",$children,c);
   translate(v) { children([0:$children-1]); }
   __object_close("translate",strv(v));
 }
 
 module _rotate(v,c="")
 {
-  __object("rotate",$children,c);
+  __object_open("rotate",$children,c);
   rotate(v) { children([0:$children-1]); }
   __object_close("rotate",strv(v));
 }
 
 module _scale(v,c="")
 {
-  __object("scale", $children,c);
+  __object_open("scale", $children,c);
   scale(v) { children([0:$children-1]); }
   __object_close("scale",strv(v));
 }
 
 module _multmatrix(m,c="")
 {
-  __object("multimatrix", $children,c);
+  __object_open("multimatrix", $children,c);
   multmatrix(m) { children([0:$children-1]); }
   __object_close("matrix",strv([m[0][0],m[1][0],m[2][0],m[0][1],m[1][1],m[2][1],m[0][2],m[1][2],m[2][2],m[0][3],m[1][3],m[2][3]]));
 }
 
 module _color(v,c="")
 {
-  __object("color",$children,c);
+  __object_open("color",$children,c);
   color(v) { children([0:$children-1]); }
   __object_close("",pigment([v[0],v[1],v[2],len(v)==4 ? 1-v[3] : 0]));
 }
