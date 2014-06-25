@@ -289,6 +289,16 @@ module _multmatrix(m,c="")
   __object_close("matrix",strv([m[0][0],m[1][0],m[2][0],m[0][1],m[1][1],m[2][1],m[0][2],m[1][2],m[2][2],m[0][3],m[1][3],m[2][3]]));
 }
 
+function _multmaxtrix_mmirror(v) = [
+[1-2*v[0]*v[0],0-2*v[0]*v[1],0-2*v[0]*v[2]],
+[0-2*v[0]*v[1],1-2*v[1]*v[1],0-2*v[1]*v[2]],
+[0-2*v[0]*v[2],0-2*v[1]*v[2],1-2*v[2]*v[2]]];
+
+module _mirror(v)
+{
+   _multmatrix(multmatrix(v/norm(v))) { children([0:$children-1]); }
+}
+
 module _color(v,c="")
 {
   __object_open("color",$children,c);
