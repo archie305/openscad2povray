@@ -1,3 +1,17 @@
+/*  Copyright 2014 Pieter Gosselink
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/    
 povray_gen=1;
 
 openscad_vpr = $vpr;
@@ -167,6 +181,8 @@ module openscad2povray_init()
     openscad_light_source();
 }
 
+
+
 module _cube(size = [1, 1, 1], center = false)
 {
     cube(size,center);
@@ -305,6 +321,11 @@ module _color(v,c="")
   __object_close("",pigment([v[0],v[1],v[2],len(v)==4 ? 1-v[3] : 0]));
 }
 
+module _render(convexity)
+{
+    render(convexity) { children([0:$children-1]); }
+}
+
 module _difference(c="")
 {
   //echo("diff",1,$children-1);
@@ -392,7 +413,7 @@ module test()
 {
   openscad2povray_init();
   test2();
-  _mirror([1,0,0]) _translate([30,0,0]) test2();
+  _mirror([1,2,3]) _translate([30,0,0]) test2();
 }
 
 test();
