@@ -18,6 +18,7 @@ use <../povray.scad>;
 module test1() // transparency/color test
 {
     openscad2povray_init();
+    povm();
     _union()
     {
         _difference()
@@ -51,7 +52,7 @@ module test2() // Direct Test
                 _cylinder(r=5,h=20,center=true);
                 _translate([5,10,15]) _rotate([0,90,0]) _cylinder(r=3,h=11,$fn=6,center=true);
             }
-            _translate ([10,10,15]) _color ([0.5,0.5,1,.8]) _sphere(r=5);
+            _translate ([10,10,15]) _color ([0.5,0.5,1,.8]) _sphere(r=5,$fn=12);
             _translate([0.05,10,30]) _rotate([0,90,0]) _color([0.2,1,.2,.8]) 
             _difference()
             {
@@ -60,7 +61,8 @@ module test2() // Direct Test
             }
             _translate([0,10,30]) _rotate([0,-90,0]) _color([1,0,1,0.2]) _cylinder(r1=8,r2=2,h=5);
         }
-}
+    }
+    povm();
     openscad2povray_init();
     _union()
     {

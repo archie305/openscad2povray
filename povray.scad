@@ -55,7 +55,7 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
     }*/   
     if ($children==0) 
     {
-        if (povray_gen) echo(str(povray_code, indent($parent_modules),  s, (s=="" ? "" : " "), (c==undef ? "" : str("// ",c))));
+        if (povray_gen) echo(str(povray_code, indent($parent_modules),  s, (s=="" ? "" : " "), (c==undef || c==""? "" : str("// ",c))));
     }
     else
     {
@@ -63,7 +63,8 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
     }    
 }       
 module povc(c) pov("",c); // a single line of comment
-module pove(e) pov(str("##### ERROR #####: ", e)); 
+module pove(e) pov(str("##### ERROR #####: ", e)); // POVRAY with error message 
+module povm() povc(str("module ", parent_module($parent_modules-1))); // comment with the name of the current module
 
 function parameter(n,v) = (v == undef ? str("  /* ",n, " not defined*/") : str(indentstr, n, " ",v, "  "));
 
@@ -177,37 +178,27 @@ module openscad2povray_init()
     openscad_light_source();
 }
 
-
+// Primitive Solids
 
 module _cube(size = [1, 1, 1], center = false)
 {
     cube(size,center);
     assign(psize = (len(size)==undef ? [size,size,size] : size))
     {
-        pov(str(
-            "box {",
-            center ? strv(-psize/2) : strv([0,0,0]),",",
-            strv(psize/(center ? 2 : 1)),
-            "}"
-        ));
+        pov(str("box {", center ? strv(-psize/2) : strv([0,0,0]),",", strv(psize/(center ? 2 : 1)), "}" ));
     }
 }
 
 module _sphere(r=1)
 {
     sphere(r=r);
-    if ($fn>0 && $fn<30) povc(str("ignored $fn value:", $fn));
-    pov(str(
-        "sphere {<0,0,0>, ",
-        r,
-        "}"
-    ));
+    pov(str("sphere {<0,0,0>, ", r, "}"), $fn>0 && $fn<30 ? str("ignored $fn value:", $fn) : "");
 }
 
 module __multisided_cone(r1,r2,h,center)
 {  
     if (r1 != r2) pove(str("unhandled tapered multisided cone:",r1,"/",r2,"/",h));
-    pov(str("intersection { // ",$fn,"-sided cylinder"));
+    pov("intersection { ",str($fn,"-sided cylinder"));
     for (i = [0:$fn-1])
     {
         pov(str(indentstr,"plane {x, ",cos(180/$fn)*r1," rotate ", strv([0,0,(i + 0.5)*360/$fn]),"}"));
@@ -231,7 +222,7 @@ module _cylinder(r1,r2,r = 1,h = 1, center = false)
             pov(str(
                 "cone {", 
                 strv(center ? [0,0,-h/2] : [0,0,0]), ",",
-                (r1==undef?r:r1), strv(center ? [0,0,h/2] : [0,0,h]), ",", 
+                (r1==undef?r:r1), " ", strv(center ? [0,0,h/2] : [0,0,h]), ",", 
                 (r2==undef?r:r2),
                 "}"
             ));
@@ -257,6 +248,8 @@ module _polyhedron(points,faces) // ONLY: Convex polygons
     }
     pov(str("}"));
 }
+
+// 3D transformations
 
 module __object_open(type,children,comment)
 {
@@ -318,10 +311,40 @@ module _color(v,c="")
   __object_close("",pigment([v[0],v[1],v[2],len(v)==4 ? 1-v[3] : 0]));
 }
 
+// not implemented 3D transformations
+
+module _resize()
+{
+   pov(str("union { ", "substitute for resize()"));
+   pove("resize() not translated, subsituted by a union");
+   resize() { children([0:$children-1]); }
+   pov(str("} ", c));
+}
+
+module _hull()
+{
+   pov(str("union { ", "substitute for hull()"));
+   pove("hull() not translated, subsituted by a union");
+   hull() { children([0:$children-1]); }
+   pov(str("} ", c));
+}
+
+module _minkowski()
+{
+   pov(str("union { ", "subsitute for minkowski()"));
+   pove("minkowski() not translated, subsituted by a union");
+   minkowski() { children([0:$children-1]); }
+   pov(str("} ", c));
+}
+
+// not applicable to POVRAY
+
 module _render(convexity)
 {
     render(convexity) { children([0:$children-1]); }
 }
+
+// CSG operations
 
 module _difference(c="")
 {
