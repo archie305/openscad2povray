@@ -251,6 +251,8 @@ module _polyhedron(points,faces) // ONLY: Convex polygons
 
 // 3D transformations
 
+function __open_transformation(children,comment) = str(c==1 ? "object" : "union", " { ", comment);
+
 module __object_open(type,children,comment)
 {
   pov(str(children==1 ? "object" : "union" , " { ",comment));
@@ -356,20 +358,22 @@ module _difference(c="")
 module _intersection(c="")
 {
     pov(str("intersection { ", c));
-    intersection() 
-    {
-        /* doesn't work, no intersection:
-        children([0:$children-1]); 
-        */
-        
-        // works, but need to be adjusted when more than 4 objects intersect
-        children(0);
-        if ($children>1) children(1);
-        if ($children>2) children(2);
-        if ($children>3) children(3);
-        if ($children>4) pove("Not enough child entries in _intersection module");
-        //      
-    }
+    intersection_for(i=[0:$children-1]) children(i);
+    
+    //intersection() 
+    //{
+    //    /* doesn't work, no intersection:
+    //    children([0:$children-1]); 
+    //    */
+    //            
+    //    /* works, but need to be adjusted when more than 4 objects intersect
+    //    children(0);
+    //    if ($children>1) children(1);
+    //    if ($children>2) children(2);
+    //    if ($children>3) children(3);
+    //    if ($children>4) pove("Not enough child entries in _intersection module");
+    //    */      
+    //}
   pov(str("} ", c));
 }
 
