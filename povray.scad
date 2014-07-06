@@ -55,7 +55,7 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
     }*/   
     if ($children==0) 
     {
-        if (povray_gen) echo(str(povray_code, s, (s=="" ? "" : " "), (c==undef ? "" : str("// ",c))));
+        if (povray_gen) echo(str(povray_code, indent($parent_modules),  s, (s=="" ? "" : " "), (c==undef ? "" : str("// ",c))));
     }
     else
     {
@@ -65,7 +65,7 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
 module povc(c) pov("",c); // a single line of comment
 module pove(e) pov(str("##### ERROR #####: ", e)); 
 
-function parameter(n,v) = (v == undef ? str("  /* ",n, " not defined*/") : str("  ", n, " ",v, "  "));
+function parameter(n,v) = (v == undef ? str("  /* ",n, " not defined*/") : str(indentstr, n, " ",v, "  "));
 
 module pov_init()
 {
@@ -146,10 +146,6 @@ module openscad_light_source()
     povc("** OpenSCAD light sources. The location depends on the view port definition **");
     pov_light_source(str(strv([-1,1,1]),"*openscad_vpd"), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");  
     pov_light_source(str(strv([1,-1,-1]),"*openscad_vpd"), color([1,1,1]), rotate="openscad_vpr", translate="openscad_vpt");   
-    /*union() { // default vpd, as $vpd does not exist (yet)
-        rotate($vpr) translate([-1,1,1]*500+$vpt) sphere(r=10);
-        rotate($vpr) translate([1,-1,-1]*500+$vpt) sphere(r=10);
-    }*/
     pov("");
 }
 
@@ -189,7 +185,6 @@ module _cube(size = [1, 1, 1], center = false)
     assign(psize = (len(size)==undef ? [size,size,size] : size))
     {
         pov(str(
-            indent($parent_modules),
             "box {",
             center ? strv(-psize/2) : strv([0,0,0]),",",
             strv(psize/(center ? 2 : 1)),
@@ -203,7 +198,6 @@ module _sphere(r=1)
     sphere(r=r);
     if ($fn>0 && $fn<30) povc(str("ignored $fn value:", $fn));
     pov(str(
-        indent($parent_modules),
         "sphere {<0,0,0>, ",
         r,
         "}"
@@ -213,15 +207,15 @@ module _sphere(r=1)
 module __multisided_cone(r1,r2,h,center)
 {  
     if (r1 != r2) pove(str("unhandled tapered multisided cone:",r1,"/",r2,"/",h));
-    pov(str(indent($parent_modules),"intersection { // ",$fn,"-sided cylinder"));
+    pov(str("intersection { // ",$fn,"-sided cylinder"));
     for (i = [0:$fn-1])
     {
-        pov(str(indent($parent_modules),indentstr,"plane {x, ",cos(180/$fn)*r1," rotate ", strv([0,0,(i + 0.5)*360/$fn]),"}"));
+        pov(str(indentstr,"plane {x, ",cos(180/$fn)*r1," rotate ", strv([0,0,(i + 0.5)*360/$fn]),"}"));
     }
     // top & bottom plane
-    pov(str(indent($parent_modules),indentstr,"plane {z, ",(center ? h/2 : h),"}"));
-    pov(str(indent($parent_modules),indentstr,"plane {-z, ",(center ? h/2 : 0),"}"));
-    pov(str(indent($parent_modules),"}"));
+    pov(str(indentstr,"plane {z, ",(center ? h/2 : h),"}"));
+    pov(str(indentstr,"plane {-z, ",(center ? h/2 : 0),"}"));
+    pov(str("}"));
     //pov(str(" bounded_by {sphere{0, 1.5}}"));
 }
 
@@ -235,7 +229,6 @@ module _cylinder(r1,r2,r = 1,h = 1, center = false)
         else
         {
             pov(str(
-                indent($parent_modules),
                 "cone {", 
                 strv(center ? [0,0,-h/2] : [0,0,0]), ",",
                 (r1==undef?r:r1), strv(center ? [0,0,h/2] : [0,0,h]), ",", 
@@ -249,13 +242,12 @@ module _cylinder(r1,r2,r = 1,h = 1, center = false)
 module _polyhedron(points,faces) // ONLY: Convex polygons
 {
     polyhedron(points,faces);
-    pov(str(indent($parent_modules),"mesh { "));
+    pov(str("mesh { "));
     for(i=[0:len(faces)-1])
     {
         for(j=[2:len(faces[i])-1])
         {
             pov(str(
-                indent($parent_modules),
                 "triangle {",
                 strv(points[faces[i][0]]),",",
                 strv(points[faces[i][j-1]]),",",
@@ -263,18 +255,18 @@ module _polyhedron(points,faces) // ONLY: Convex polygons
             ));
         }
     }
-    pov(indent($parent_modules),str("}"));
+    pov(str("}"));
 }
 
 module __object_open(type,children,comment)
 {
-  pov(str(indent($parent_modules), children==1 ? "object" : "union" , " { ",comment));
+  pov(str(children==1 ? "object" : "union" , " { ",comment));
 }
 
 module __object_close(type,code)
 {
-  pov(str(indent($parent_modules),indentstr,type," ",code));
-  pov(str(indent($parent_modules),"}")); 
+  pov(str(indentstr,type," ",code));
+  pov(str("}")); 
 }
 
 module _translate(v,c="")
@@ -329,14 +321,14 @@ module _render(convexity)
 module _difference(c="")
 {
   //echo("diff",1,$children-1);
-  pov(str(indent($parent_modules),"difference { ", c));
+  pov(str("difference { ", c));
   difference() { children(0); if ($children>1) children([1:$children-1]); }
-  pov(str(indent($parent_modules),"} ", c));
+  pov(str("} ", c));
 }
 
 module _intersection(c="")
 {
-    pov(str(indent($parent_modules),"intersection { ", c));
+    pov(str("intersection { ", c));
     intersection() 
     {
         children(0);
@@ -345,21 +337,21 @@ module _intersection(c="")
         if ($children>3) children(3);
         if ($children>4) pove("Not enough child entries in _intersection module");
     }
-  pov(str(indent($parent_modules),"} ", c));
+  pov(str("} ", c));
 }
 
 module _union(c="")
 {
   //echo("union",0,$children-1);
-  pov(str(indent($parent_modules), "union { ", c));
+  pov(str("union { ", c));
   union() { children([0:$children-1]); }
-  pov(str(indent($parent_modules),"} ", c));
+  pov(str("} ", c));
 }
 
 module _group()
 {
-  pov(str(indent($parent_modules), "union { "));
+  pov(str("union { "));
   if ($children>0) group() { children([0:$children-1]); }
-  pov(str(indent($parent_modules),"}"));
+  pov(str("}"));
 }
 
