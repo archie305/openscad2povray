@@ -46,16 +46,13 @@ module test2() // Direct Test
         _translate([-5,-10,0]) 
         _union()
         {
-            _color([1,0.5,0.5]) _difference()
-            {
+            _color([1,0.5,0.5]) _difference() {
                 _cube(size=[10,20,30]);
                 _cylinder(r=5,h=20,center=true);
                 _translate([5,10,15]) _rotate([0,90,0]) _cylinder(r=3,h=11,$fn=6,center=true);
             }
             _translate ([10,10,15]) _color ([0.5,0.5,1,.8]) _sphere(r=5,$fn=12);
-            _translate([0.05,10,30]) _rotate([0,90,0]) _color([0.2,1,.2,.8]) 
-            _difference()
-            {
+            _translate([0.05,10,30]) _rotate([0,90,0]) _color([0.2,1,.2,.8]) _difference() {
                 _cylinder(r=10,h=9.9);
                 _translate([0,0,-0.5]) _cylinder(r=6,h=11);
             }
@@ -98,4 +95,18 @@ module test3() // Indirect Test
     translate([50,0,15]) rotate([0,-10,10]) obj(15,[1,1,1,.5]*.8);
 }
 
-test2();
+module test4()
+{
+    pov_gen=0;
+    povm();
+    openscad2povray_init();
+    _intersection()
+    {
+        _rotate([0,0,0]) _translate([5,0,0]) _sphere(10);
+        _rotate([0,0,90]) _translate([5,0,0]) _sphere(10);
+        _rotate([0,0,180]) _translate([5,0,0]) _sphere(10);
+        _rotate([0,0,270]) _translate([5,0,0]) _sphere(10);
+    }
+}
+
+test4();

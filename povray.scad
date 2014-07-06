@@ -12,7 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */    
-povray_gen=1;
+pov_gen=1;
 
 openscad_vpr = $vpr;
 openscad_vpt = $vpt;
@@ -43,7 +43,7 @@ function mapped_function_used(i) =
 
 // modules to print out the pov-ray code
 
-povray_code = "POVRAY:";
+pov_code = "POVRAY:";
 
 
 module pov(s,c) // s = string to print out, c = optional end of line comment
@@ -55,7 +55,7 @@ module pov(s,c) // s = string to print out, c = optional end of line comment
     }*/   
     if ($children==0) 
     {
-        if (povray_gen) echo(str(povray_code, indent($parent_modules),  s, (s=="" ? "" : " "), (c==undef || c==""? "" : str("// ",c))));
+        if (pov_gen) echo(str(pov_code, indent($parent_modules),  s, (s=="" ? "" : " "), (c==undef || c==""? "" : str("// ",c))));
     }
     else
     {
@@ -207,7 +207,7 @@ module __multisided_cone(r1,r2,h,center)
     pov(str(indentstr,"plane {z, ",(center ? h/2 : h),"}"));
     pov(str(indentstr,"plane {-z, ",(center ? h/2 : 0),"}"));
     pov(str("}"));
-    //pov(str(" bounded_by {sphere{0, 1.5}}"));
+    //pov(str(" bounded_by {sphere{0, 1.5}}")); // issue #5
 }
 
 module _cylinder(r1,r2,r = 1,h = 1, center = false)
@@ -315,8 +315,8 @@ module _color(v,c="")
 
 module _resize()
 {
-   pov(str("union { ", "substitute for resize()"));
-   pove("resize() not translated, subsituted by a union");
+   pov(str("union { ", "substitute for resize()")); // child bounding box is needed for a 'resize'
+   pove("resize() not translated, subsituted by a union()");
    resize() { children([0:$children-1]); }
    pov(str("} ", c));
 }
@@ -324,7 +324,7 @@ module _resize()
 module _hull()
 {
    pov(str("union { ", "substitute for hull()"));
-   pove("hull() not translated, subsituted by a union");
+   pove("hull() not translated, subsituted by a union()");
    hull() { children([0:$children-1]); }
    pov(str("} ", c));
 }
@@ -332,12 +332,12 @@ module _hull()
 module _minkowski()
 {
    pov(str("union { ", "subsitute for minkowski()"));
-   pove("minkowski() not translated, subsituted by a union");
+   pove("minkowski() not translated, subsituted by a union()");
    minkowski() { children([0:$children-1]); }
    pov(str("} ", c));
 }
 
-// not applicable to POVRAY
+// not applicable to POV-Ray
 
 module _render(convexity)
 {
@@ -348,7 +348,6 @@ module _render(convexity)
 
 module _difference(c="")
 {
-  //echo("diff",1,$children-1);
   pov(str("difference { ", c));
   difference() { children(0); if ($children>1) children([1:$children-1]); }
   pov(str("} ", c));
@@ -359,18 +358,23 @@ module _intersection(c="")
     pov(str("intersection { ", c));
     intersection() 
     {
+        /* doesn't work, no intersection:
+        children([0:$children-1]); 
+        */
+        
+        // works, but need to be adjusted when more than 4 objects intersect
         children(0);
         if ($children>1) children(1);
         if ($children>2) children(2);
         if ($children>3) children(3);
         if ($children>4) pove("Not enough child entries in _intersection module");
+        //      
     }
   pov(str("} ", c));
 }
 
 module _union(c="")
 {
-  //echo("union",0,$children-1);
   pov(str("union { ", c));
   union() { children([0:$children-1]); }
   pov(str("} ", c));
